@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Description: CD Demo Lambda
 Resources:
-  devfunction:
+  QAfunction:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: lambda_function.lambda_handler
@@ -13,10 +13,10 @@ Resources:
       Timeout: 30
       Role: 'arn:aws:iam::845068533700:role/MyLambdaRole'
       Events:
-        DEVAPI:
+        QAAPI:
           Type: Api
           Properties:
-            Path: /DEV
+            Path: /QA
             Method: get
       Environment:
         Variables:
