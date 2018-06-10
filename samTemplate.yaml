@@ -13,10 +13,10 @@ Resources:
       Timeout: 30
       Role: 'arn:aws:iam::845068533700:role/MyLambdaRole'
       Events:
-        devAPI:
+        getAZsSAPI:
           Type: Api
           Properties:
-            Path: /dev
+            Path: /getazsS
             Method: get
       Environment:
         Variables:
