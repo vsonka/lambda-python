@@ -13,10 +13,10 @@ Resources:
       Timeout: 30
       Role: 'arn:aws:iam::845068533700:role/MyLambdaRole'
       Events:
-        dev-apiAPI:
+        devAPI:
           Type: Api
           Properties:
-            Path: /dev-api
+            Path: /dev
             Method: get
       Environment:
         Variables:
