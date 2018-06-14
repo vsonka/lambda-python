@@ -87,7 +87,7 @@ Resources:
 
 # Create lambda Function
   POCFunction:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     Properties:
       Handler: "index.handler"
       Role: !GetAtt RootRole.Arn
