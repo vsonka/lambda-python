@@ -92,9 +92,7 @@ Resources:
       Handler: "index.handler"
       Role: !GetAtt RootRole.Arn
       FunctionName: viksonFunction
-      Code:
-        S3Bucket: "cf-templates-tnpuea9f5aip-ap-southeast-2"
-        S3Key: "code.zip"
+      CodeUri: ./LambdaCode
       Runtime: python2.7
 #     set Environment variable of Lambda Function
       Environment: 
