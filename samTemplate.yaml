@@ -1,23 +1,108 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Transform: 'AWS::Serverless-2016-10-31'
-Description: CD Demo Lambda
-Resources:
-  QAfunction:
-    Type: 'AWS::Serverless::Function'
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+    This template will create User Poll with some common settings
+Parameters:
+    CognitoUserPoolName:
+        Type: String
+        Description: Cognito identity pool name.
+        Default: viksonCognito
+        MinLength: 1
+        MaxLength: 128
+        AllowedPattern: '^[\w ]+$'
+        ConstraintDescription: Alphanumeric and spaces.
+Resources: 
+# Create Role for lambda function
+  RootRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "lambda.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies: 
+        - 
+          PolicyName: "root"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - 
+                Effect: "Allow"
+                Action: "*"
+                Resource: "*"
+  RootInstanceProfile: 
+    Type: "AWS::IAM::InstanceProfile"
+    Properties: 
+      Path: "/"
+      Roles: 
+        - 
+          Ref: "RootRole"
+
+ # Create Cognito User Pool
+ 
+  UserPool:
+    Type: AWS::Cognito::UserPool
     Properties:
-      Handler: lambda_function.lambda_handler
-      Runtime: python3.6
-      CodeUri: ./LambdaCode
-      Description: 'Lambda function for CD Demo'
-      MemorySize: 128
-      Timeout: 30
-      Role: 'arn:aws:iam::845068533700:role/MyLambdaRole'
-      Events:
-        QAAPI:
-          Type: Api
-          Properties:
-            Path: /QA
-            Method: get
-      Environment:
-        Variables:
-          REGION: ap-southeast-2
+      UserPoolName: !Ref CognitoUserPoolName
+      SmsVerificationMessage: "Your verification code is {####}."
+      AutoVerifiedAttributes:
+        - email
+      MfaConfiguration: "OFF"
+      EmailVerificationSubject: "Your Digispeaker verification code"
+      EmailVerificationMessage: "Your Digispeaker verification code is {####}."
+      SmsAuthenticationMessage: "Your Digispeaker authentication code is {####}."
+      Schema:
+       - Name: name
+         AttributeDataType: String
+         Mutable: true
+         Required: true
+       - Name: email
+         AttributeDataType: String
+         Mutable: false
+         Required: true
+       - Name: phone_number
+         AttributeDataType: String
+         Mutable: true
+         Required: true
+      Policies:
+        PasswordPolicy:
+          RequireLowercase: true
+          RequireSymbols: false
+          RequireNumbers: true
+          MinimumLength: 8
+          RequireUppercase: true
+      AdminCreateUserConfig:
+        InviteMessageTemplate:
+          EmailMessage: "Your Digispeaker username is {username} and temporary password is {####}."
+          EmailSubject: "Your temporary Digispeaker password"
+          SMSMessage: "Your Digispeaker username is {username} and temporary password is {####}."
+        UnusedAccountValidityDays: 7
+        AllowAdminCreateUserOnly: false
+
+# Create lambda Function
+  POCFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: "index.handler"
+      Role: !GetAtt RootRole.Arn
+      FunctionName: viksonFunction
+      Code:
+        S3Bucket: "cf-templates-tnpuea9f5aip-ap-southeast-2"
+        S3Key: "code.zip"
+      Runtime: python2.7
+#     set Environment variable of Lambda Function
+      Environment: 
+         Variables:
+            UserPoolID: !Ref UserPool
+            UserPoolARN: !GetAtt UserPool.Arn
+#    Display OutPut
+Outputs:
+    CognitoIdentityPoolId:
+        Description: Cognito identity pool id.
+        Value: !GetAtt UserPool.Arn
